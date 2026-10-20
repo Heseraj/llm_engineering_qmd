@@ -1,0 +1,8 @@
+---
+title: LLM Engineering 
+subtitle: Week 1, Day 2 
+author: Mosa Rahimi 
+date: October 19, 2026 
+---
+
+This is an attempt to recreate and reproduce the work in qmd format. 
