@@ -1,0 +1,137 @@
+---
+title: LLM Engineering 
+subject: Week 1, Day 5 
+subject: 
+author: Mosa Rahimi 
+date: October 20, 2026
+
+---
+
+This is day 5 of week 1, 
+Week for was about tokenization, how each text is tokenized and how can one encode and decode the text. 
+Additionally, it was also about LLM stateless nature that on their own LLM don't have memory. Therefore context matters a lot. 
+
+tasks 
+1. add all the packages needed 
+2. make sure your api key is verified 
+3. load your key 
+4. create client and response 
+  4.1 if need be, create system or user message 
+5. Print the response  
+
+
+```{python}
+import os 
+import json 
+from openai import OpenAI
+from dotenv import load_dotenv
+from IPython.display import Markdown, display, update_display
+from scraper import fetch_website_links, fetch_website_contents
+
+load_dotenv(override=True)
+
+openai_api_key = os.getenv("OPENAI_API_KEY")
+## to check, first comment out your openai key 
+if not openai_api_key: 
+  print("No openai api key was found")
+elif not openai_api_key.startswith("sk-proj-"):
+  print("The api key is not the right key")
+else: 
+  print("Your Openai Api Key is ready to use!")
+
+```
+
+
+```{python}
+openai = OpenAI()
+MODEL = "gpt-6-luna"
+
+response = openai.chat.completions.create(model=MODEL, messages=[
+  {"role": "user", "content": "Tell me a fun fact about Pakistan!"}
+])
+
+response.choices[0].message.content
+
+
+```
+
+```{python}
+links = fetch_website_links("https://Mosarahimi.com")
+links
+
+```
+
+Oneshot prompting 
+
+```{python}
+link_system_prompt = """
+You are provided with a list of links found on a webpage.
+You are able to decide which of the links would be most relevant to include in a brochure about the company,
+such as links to an About page, or a Company page, or Careers/Jobs pages.
+You should respond in JSON as in this example:
+
+{
+    "links": [
+        {"type": "about page", "url": "https://full.url/goes/here/about"},
+        {"type": "careers page", "url": "https://another.full.url/careers"}
+    ]
+}
+"""
+```
+
+defining a function for user prompt 
+
+```{python}
+
+def get_links_user_prompt(url): 
+  user_prompt = f"""
+Here is the list of links on the website {url} -
+Please decide which of these are relevant web links for a brochure about the company, 
+respond with the full https URL in JSON format.
+Do not include Terms of Service, Privacy, email links.
+
+Links (some might be relative links):
+
+"""
+  links = fetch_website_links(url)
+  user_prompt+= "\n".join(links)
+  return user_prompt
+
+```
+
+below see the result 
+
+```{python}
+my_url = "https://MosaRahimi.com"
+print(get_links_user_prompt(my_url))
+
+```
+
+```{python}
+def select_relevant_links(url):
+    response = openai.chat.completions.create(
+        model=MODEL,
+        messages=[
+            {"role": "system", "content": link_system_prompt},
+            {"role": "user", "content": get_links_user_prompt(url)}
+        ],
+        response_format={"type": "json_object"}
+    )
+    result = response.choices[0].message.content
+    links = json.loads(result)
+    return links
+
+```
+I used my own personal website for this work. 
+
+```{python}
+select_relevant_links(my_url)
+
+
+
+```
+
+
+
+
+

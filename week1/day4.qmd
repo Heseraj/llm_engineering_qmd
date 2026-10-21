@@ -1,0 +1,169 @@
+---
+title: LLM Engineering 
+subtitle: Day 4, Week1 
+subject: Tokenenization 
+author: Mosa Rahimi 
+date: October 20, 2026 
+
+---
+
+Day 3 was a redone of some work and practice. 
+remembering important points 
+
+Openai popularity forced other provider to offer their services on openai endpoint 
+
+each LLM call has two main components Clients and Response 
+Clients itself has two components, base url and api key 
+responses has two components model and messages, additionally, messages has two components as well, role and content 
+
+client = OpenAI(model, base_url)
+response = client.chat.completions.create(model, messages = [{"role": "user", "content": "some text here!"}]) 
+Always remember the above 
+
+
+```{python}
+assert 2+2 == 4
+
+```
+
+Import important packages 
+
+```{python}
+import tiktoken
+
+encoding = tiktoken.encoding_for_model(model_name="gpt-4.1-mini")
+tokens = encoding.encode("Hi, my name is Mosa and I like salad soup!")
+tokens
+
+```
+
+reversing the tokens 
+
+```{python}
+
+for token_id in tokens: 
+  token_text = encoding.decode([token_id])
+  print(f"The token id {token_id} == {token_text}")
+
+```
+
+And another topic!
+The Illusion of "memory"
+Many of you will know this already. But for those that don't -- this might be an "AHA" moment!
+
+Task: 
+bring your packages and api keys to your current session 
+
+```{python}
+import os 
+from dotenv import load_dotenv
+from openai import OpenAI
+load_dotenv(override=True)
+
+deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
+### verify the deepseek key 
+if not deepseek_api_key: 
+  print("there is no deepseek api key ")
+elif not deepseek_api_key.startswith("sk-"):
+  print("The key doesn't start with sk0")
+else: 
+  print("Your DeepSeek Api Key is ready to use. ")
+
+### here deepseek is the client. It needs two things: base url and base model 
+deepseek = OpenAI(api_key=deepseek_api_key, base_url="https://api.deepseek.com")
+### changing the fun facts to make sure the model is working 
+response = deepseek.chat.completions.create(model="deepseek-chat", messages = [
+  {"role": "user", "content": "Tell me a fun fact about Tajikistan."}
+])
+
+print(f"the model is {response.model} \nthe fun fact: {response.choices[0].message.content}")
+
+
+
+```
+
+create the same thing for openai 
+
+```{python}
+### do everything from scratch 
+import os 
+from openai import OpenAI
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
+openai_key = os.getenv("OPENAI_API_KEY")
+
+### Later I can create a module to verify if the key 
+if not openai_key: 
+  print("The openai key doesn't exisit.") 
+elif not openai_key.startswith("sk-proj-"):
+  print("The right openai key doesn't exist")
+else: 
+  print("Your Openai Api Key is ready to use. Enjoy LLM engineering!")
+
+### Create the client 
+openai_client = OpenAI(api_key=openai_key, base_url="https://api.openai.com/v1")
+
+# create the response 
+response = openai_client.chat.completions.create(model="gpt-6-luna", messages=[
+  {"role": "user", "content": "Tell me a fun fact about Afghanistan!"}
+])
+
+response.choices[0].message.content
+
+```
+
+recreating the lecture 
+### Two types of Messages 
+#### System message 
+#### User message
+
+
+```{python}
+from openai import OpenAI
+
+openai = OpenAI()
+
+### below creating messages, 
+## there are two messages, one is system message and the other is user message 
+messages = [
+  {"role": "system", "content": "You are a professional helpful assistant."}, 
+  {"role": "user", "content": "Hi!, my name is Mosa Rahimi. "}
+]
+
+response = openai.chat.completions.create(model = "gpt-6-luna", messages = messages)
+response.choices[0].message.content
+
+```
+below if I change the message and change the user message, even though above I gave my name to it, the luna will not know my name. 
+
+```{python}
+messages = [
+  {"role": "system", "content": "You are a professional helpful assistant."}, 
+  {"role": "user", "content": "What is my name? Do you know it? "}
+]
+response = openai.chat.completions.create(model = "gpt-6-luna", messages=messages)
+response.choices[0].message.content 
+
+```
+
+The two chunk code above shows that the LLM are stateless, meaning they don't have memory 
+
+Below example adds memory to the chat, in fact it creates context 
+
+```{python}
+messages = [
+    {"role": "system", "content": "You are a helpful assistant"},
+    {"role": "user", "content": "Hi! I'm Mosa Rahimi!"},
+    {"role": "assistant", "content": "Hi Mosa Rahimi! How can I assist you today?"},
+    {"role": "user", "content": "What's my name?"}
+    ]
+
+response = openai.chat.completions.create(model = "gpt-6-luna", messages=messages)
+response.choices[0].message.content
+
+```
+
+
+
+

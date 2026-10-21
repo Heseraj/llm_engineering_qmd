@@ -118,6 +118,20 @@ display(Markdown(response.choices[0].message.content))
 
 
 ```{python}
+import json
 response.model
+response.usage
+
+print(f"Model Used: {response.model}")
+print(f"Finish Reason: {response.choices[0].finish_reason}")
+print(f"Total Tokens Used: {response.usage.total_tokens}")
+print(f"AI Content:\n{response.choices[0].message.content}")
+response.json()
 
 ```
+
+
+again, each api call has two components: Clients and Response 
+Clients consists of two components, base url and api key 
+response consists of model and messages and messages itself consists of two additiional components user and content 
+
